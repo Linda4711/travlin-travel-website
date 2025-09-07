@@ -1,0 +1,141 @@
+import React from 'react'
+import Header from './components/Header'
+import Hero from './components/Hero'
+import Footer from './components/Footer'
+import SEOHead from './components/SEOHead'
+import TravLinButton from './components/TravLinButton'
+import { Ship, Plane, Building2 } from 'lucide-react'
+
+export default function App() {
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact')
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-white relative">
+      <SEOHead page="home" />
+      
+      <Header />
+      
+      <Hero />
+      
+      {/* Simplified Content Section */}
+      <section className="pt-24 pb-16 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center">
+            <h2 className="section-heading mb-6">
+              Cruise and Travel Options
+            </h2>
+            
+            <div className="relative max-w-5xl mx-auto mb-12">
+              <div 
+                className="border border-gray-200 shadow-xl p-8 sm:p-12 lg:p-16 relative overflow-hidden" 
+                style={{ 
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 25%, #ffffff 50%, #f8f9fa 75%, #f3f4f6 100%)',
+                  boxShadow: '0 20px 40px rgba(0, 117, 204, 0.08), 0 8px 16px rgba(237, 125, 49, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                {/* Three brand icons row */}
+                <div className="flex justify-center items-center gap-8 mb-12 sm:mb-14 lg:mb-16">
+                  {/* Cruise icon - Brand Blue */}
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+                    style={{ backgroundColor: 'var(--brand-blue)' }}
+                  >
+                    <Ship className="w-8 h-8 text-white" />
+                  </div>
+                  
+                  {/* Airplane icon - Brand Orange */}
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+                    style={{ backgroundColor: 'var(--brand-orange)' }}
+                  >
+                    <Plane className="w-8 h-8 text-white" />
+                  </div>
+                  
+                  {/* Hotel icon - Brand Yellow */}
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+                    style={{ backgroundColor: 'var(--brand-yellow)' }}
+                  >
+                    <Building2 className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                
+                {/* Description */}
+                <div className="text-center mb-12 sm:mb-14 lg:mb-16">
+                  <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto mb-6">
+                    With our expert training and firsthand experience, we'll help you find the perfect cruise tailored for you. Discover why more Australians are choosing cruising—it's a unique blend of adventure and relaxation, ideal for memorable holidays.
+                  </p>
+                  <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto mb-4">
+                    As CLIA Cruise Masters, we specialise in ocean voyages, river journeys, expeditions, and luxury escapes—inclusive of group celebrations and multi-generational getaways.
+                  </p>
+                  <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
+                    Beyond cruising, we offer complete travel support: flights, hotels, tours, packages, car hire, rail, visas, and insurance. Whether you build around a cruise or travel independently, just ask—there really is a cruise (and journey) for everyone. Let us help you find it!
+                  </p>
+                </div>
+                
+                {/* Call to Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 justify-center items-center mt-4">
+                  <TravLinButton
+                    onClick={scrollToContact}
+                    variant="blue"
+                    size="lg"
+                    className="w-48"
+                  >
+                    CRUISES
+                  </TravLinButton>
+                  
+                  <TravLinButton
+                    onClick={scrollToContact}
+                    variant="orange"
+                    size="lg"
+                    className="w-48"
+                  >
+                    TRAVEL OPTIONS
+                  </TravLinButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Simple Contact Section */}
+      <section id="contact" className="pt-24 pb-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="section-heading mb-6">Ready to Start Your Journey?</h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-12">
+              Contact our expert travel consultants for personalized cruise and travel planning. Award-winning service, free consultations, and competitive quotes.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <TravLinButton
+                onClick={() => window.open('tel:+61415355851', '_self')}
+                variant="orange"
+                size="lg"
+              >
+                CALL US NOW
+              </TravLinButton>
+              
+              <TravLinButton
+                onClick={() => window.open('mailto:hello@travlintravel.com.au', '_self')}
+                variant="blue"
+                size="lg"
+              >
+                EMAIL US
+              </TravLinButton>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  )
+}

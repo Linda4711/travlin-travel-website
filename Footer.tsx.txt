@@ -1,0 +1,521 @@
+import React, { useState, useRef, useEffect } from 'react'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Send, Globe, Users, Play, ExternalLink, Volume2, VolumeX, FileText, Cloud, DollarSign, Shield, Heart, Plane, MapIcon } from 'lucide-react'
+import { toast } from 'sonner@2.0.3'
+import emailjs from '@emailjs/browser'
+import BotProtection, { BotProtectionUtils } from './BotProtection'
+import verticalLogo from 'figma:asset/75be9cf827554b480dd54df4fff79141ce4f6cc5.png'
+import signpostIcon from 'figma:asset/9ea2bc3b19b9b61e0b0063bcd6489bc09d45f9db.png'
+import TermsPrivacy from './TermsPrivacy'
+
+
+interface FooterProps {
+  onContactClick?: () => void
+  onNavigateToServices?: () => void
+  onNavigateToCruises?: () => void
+  onNavigateToTravelOptions?: () => void
+  onNavigateToStories?: () => void
+  onNavigateToAbout?: () => void
+  onNavigateToAI?: () => void
+  onNavigateToHome?: () => void
+}
+
+export default function Footer({ onContactClick, onNavigateToServices, onNavigateToCruises, onNavigateToTravelOptions, onNavigateToStories, onNavigateToAbout, onNavigateToAI, onNavigateToHome }: FooterProps) {
+  const [showTermsPrivacy, setShowTermsPrivacy] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [footerEmail, setFooterEmail] = useState('')
+  const [isFooterSubscribing, setIsFooterSubscribing] = useState(false)
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  // Volume control handler
+  const handleVolumeToggle = () => {
+    if (iframeRef.current) {
+      const iframe = iframeRef.current
+      const currentSrc = iframe.src
+      
+      if (isMuted) {
+        // Unmute by removing mute parameter
+        const newSrc = currentSrc.replace(/&mute=1/g, '').replace(/\?mute=1&/g, '?').replace(/\?mute=1$/g, '')
+        iframe.src = newSrc
+        setIsMuted(false)
+      } else {
+        // Mute by adding mute parameter
+        const separator = currentSrc.includes('?') ? '&' : '?'
+        iframe.src = currentSrc + separator + 'mute=1'
+        setIsMuted(true)
+      }
+    }
+  }
+
+  // Footer subscription handler
+  const handleFooterSubscribe = async () => {
+    if (!footerEmail.trim()) {
+      toast.error('Please enter your email address')
+      return
+    }
+
+    // Bot Protection: Check for bot submission
+    if (BotProtectionUtils.isBotSubmission()) {
+      // Bot detected - silently fail
+      toast.error('Please try again in a moment.')
+      return
+    }
+
+    // Rate limiting: Check if submitting too frequently
+    if (BotProtectionUtils.isRateLimited('lastFooterSubscription', 30000)) { // 30 second cooldown
+      toast.error('Please wait before subscribing again.')
+      return
+    }
+
+    // Email validation
+    if (!BotProtectionUtils.isValidEmail(footerEmail)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+
+    if (!agreedToPrivacy) {
+      toast.error('Please agree to the privacy policy to continue')
+      return
+    }
+
+    setIsFooterSubscribing(true)
+    
+    // Record submission for rate limiting
+    BotProtectionUtils.recordSubmission('lastFooterSubscription')
+
+    try {
+      // EmailJS configuration - using your existing credentials
+      const templateParams = {
+        to_email: 'hello@travlintravel.com.au',
+        from_email: footerEmail,
+        subject: 'New Footer Newsletter Subscription',
+        message: `New newsletter subscription from footer:
+        
+Email: ${footerEmail}
+Source: Footer (Site-wide)
+Date: ${new Date().toLocaleString()}
+Privacy Policy: Agreed
+        
+Please add this email to the general TravLin Travel mailing list for travel deals and updates.`
+      }
+
+      await emailjs.send(
+        'service_rlnjyuj',    // Your Service ID
+        'template_aiumzob',   // Your Template ID  
+        templateParams,
+        'GY6ImN3fkI91A6mGw'  // Your Public Key
+      )
+
+      toast.success('🎉 Thank you for subscribing! You\'ll receive our best travel deals and updates.')
+      setFooterEmail('')
+      setAgreedToPrivacy(false)
+    } catch (error) {
+      console.error('Footer subscription error:', error)
+      toast.error('Subscription failed. Please try again or contact us directly.')
+    } finally {
+      setIsFooterSubscribing(false)
+    }
+  }
+
+  return (
+    <footer className="bg-gray-800 text-white">
+      <div className="travel-container py-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-10">
+          {/* Company Info - ABOUT US - Column 1 */}
+          <div className="space-y-4">
+            <div className="flex flex-col items-start space-y-3 mb-6">
+              <img 
+                src={verticalLogo}
+                alt="TravLin Travel"
+                className="h-24 w-auto hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            
+            <div className="space-y-3 flex flex-col" style={{ minHeight: '160px' }}>
+              <h4 className="font-semibold mb-3">ABOUT US</h4>
+              <p className="text-gray-300 leading-relaxed text-sm flex-grow">
+                Creating extraordinary travel experiences that transform perspectives and forge lasting 
+                connections across cultures and continents for over 19 years. Founded by Linda Forster, 
+                we specialize in all forms of cruise holiday. Let us inspire your wanderlust!
+              </p>
+            </div>
+          </div>
+          
+          {/* Travel/Services Links & Newsletter - QUICK LINKS - Column 2 */}
+          <div className="space-y-3 flex flex-col" style={{ minHeight: '160px' }}>
+            <h4 className="font-semibold mb-3">QUICK LINKS</h4>
+            
+            <div className="grid grid-cols-1 gap-2 flex-grow">
+              <div>
+                <ul className="space-y-1.5 text-sm text-gray-300" style={{ lineHeight: '1.2' }}>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        if (onNavigateToHome) {
+                          onNavigateToHome();
+                        }
+                      }}
+                      className="transition-colors duration-300 hover:pl-2 text-left w-full"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#FFC000'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#dee2e6'; }}
+                    >
+                      Home
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        if (onNavigateToAbout) {
+                          onNavigateToAbout();
+                        }
+                      }}
+                      className="transition-colors duration-300 hover:pl-2 text-left w-full"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#ED7D31'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#dee2e6'; }}
+                    >
+                      About Us
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        if (onNavigateToCruises) {
+                          onNavigateToCruises();
+                        }
+                      }}
+                      className="transition-colors duration-300 hover:pl-2 text-left w-full"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#0075CC'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#dee2e6'; }}
+                    >
+                      Cruises
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        if (onNavigateToTravelOptions) {
+                          onNavigateToTravelOptions();
+                        }
+                      }}
+                      className="transition-colors duration-300 hover:pl-2 text-left w-full"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#ED7D31'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#dee2e6'; }}
+                    >
+                      Travel Options
+                    </button>
+                  </li>
+
+
+                  <li>
+                    <button 
+                      onClick={() => {
+                        if (onNavigateToStories) {
+                          onNavigateToStories();
+                        }
+                      }}
+                      className="transition-colors duration-300 hover:pl-2 text-left w-full"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#ED7D31'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#dee2e6'; }}
+                    >
+                      TravLin Stories
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        if (onContactClick) {
+                          onContactClick();
+                        }
+                      }}
+                      className="transition-colors duration-300 hover:pl-2 text-left w-full"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#ED7D31'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#dee2e6'; }}
+                    >
+                      Contact Us
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Newsletter Subscription - Moved to Quick Links for minimal footer height */}
+            <div className="border-t border-gray-700 pt-3 mt-3">
+              <div className="mb-3">
+                <p className="text-sm" style={{ lineHeight: '1.4' }}>
+                  <span className="font-semibold" style={{ color: '#FFC000' }}>SUBSCRIBE</span>
+                  <span className="text-gray-300"> to get exclusive travel deals and inspiration straight into your inbox</span>
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                
+                <div className="space-y-2">
+                  <BotProtection />
+                  <div className="relative">
+                    <Input 
+                      type="email" 
+                      placeholder="Your email address"
+                      value={footerEmail}
+                      onChange={(e) => setFooterEmail(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleFooterSubscribe()}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-md pr-10 py-2 text-sm transition-colors duration-300"
+                      style={{ borderColor: '#495057' }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = '#ED7D31'; }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = '#495057'; }}
+                    />
+                    <Button 
+                      size="sm"
+                      onClick={handleFooterSubscribe}
+                      disabled={isFooterSubscribing}
+                      className="absolute right-1 top-1 rounded-md p-1 transition-all duration-300"
+                      style={{
+                        backgroundColor: '#ED7D31',
+                        color: 'white',
+                        border: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isFooterSubscribing) {
+                          e.currentTarget.style.backgroundColor = '#d16519';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isFooterSubscribing) {
+                          e.currentTarget.style.backgroundColor = '#ED7D31';
+                        }
+                      }}
+                    >
+                      {isFooterSubscribing ? (
+                        <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Send className="w-3 h-3" />
+                      )}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-xs text-gray-400">
+                    <input 
+                      type="checkbox" 
+                      checked={agreedToPrivacy}
+                      onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                      className="rounded border-gray-600 scale-75" 
+                    />
+                    <span>I agree to the privacy policy</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Contact Info - CONTACT INFO - Column 3 Left Aligned */}
+          <div className="space-y-3 flex flex-col text-left justify-between" style={{ minHeight: '160px' }}>
+            <div>
+              <h4 className="font-semibold mb-3">CONTACT INFO</h4>
+              
+              <div className="space-y-2.5">
+                <div className="text-sm text-gray-300" style={{ lineHeight: '1.6' }}>
+                  <p className="font-medium text-white">PO BOX 7303, Karingal Centre</p>
+                  <p className="font-medium text-white">KARINGAL VIC 3199 AUSTRALIA</p>
+                </div>
+                
+                <div className="flex items-center justify-start space-x-2.5">
+                  <Globe className="w-4 h-4 flex-shrink-0" style={{ color: '#ED7D31' }} />
+                  <span className="text-sm text-gray-300" style={{ lineHeight: '1.2' }}>www.travlintravel.com.au</span>
+                </div>
+                
+                <div className="flex items-center justify-start space-x-2.5">
+                  <Phone className="w-4 h-4 flex-shrink-0" style={{ color: '#ED7D31' }} />
+                  <span className="text-sm text-gray-300" style={{ lineHeight: '1.2' }}>+61 415 355 851</span>
+                </div>
+                
+                <div className="flex items-center justify-start space-x-2.5">
+                  <Mail className="w-4 h-4 flex-shrink-0" style={{ color: '#ED7D31' }} />
+                  <span className="text-sm text-gray-300" style={{ lineHeight: '1.2' }}>hello@travlintravel.com.au</span>
+                </div>
+                
+                <div className="space-y-1.5 text-sm text-gray-300 pt-1.5" style={{ lineHeight: '1.2' }}>
+                  <div className="flex items-center justify-start space-x-2">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC000' }}></span>
+                    <span>24/7 Emergency Travel Support</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Travel Resources Icons - Clean horizontal strip */}
+            <div className="pt-2 mt-2 border-t border-gray-700">
+              <h5 className="text-xs font-medium text-gray-400 mb-2">TRAVEL RESOURCES</h5>
+              <div className="flex justify-start space-x-2 flex-wrap gap-y-2">
+                <a 
+                  href="https://www.passports.gov.au"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Passport Information"
+                  className="w-7 h-7 border border-white/20 text-gray-300 hover:border-blue-400 hover:bg-blue-400 hover:text-white rounded transition-all duration-300 bg-transparent inline-flex items-center justify-center text-xs"
+                >
+                  <FileText className="w-3 h-3" />
+                </a>
+                <a 
+                  href="https://www.bom.gov.au"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Weather Information"
+                  className="w-7 h-7 border border-white/20 text-gray-300 hover:border-blue-400 hover:bg-blue-400 hover:text-white rounded transition-all duration-300 bg-transparent inline-flex items-center justify-center text-xs"
+                >
+                  <Cloud className="w-3 h-3" />
+                </a>
+                <a 
+                  href="https://www.xe.com/currencyconverter"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Currency Converter"
+                  className="w-7 h-7 border border-white/20 text-gray-300 hover:border-green-400 hover:bg-green-400 hover:text-white rounded transition-all duration-300 bg-transparent inline-flex items-center justify-center text-xs"
+                >
+                  <DollarSign className="w-3 h-3" />
+                </a>
+                <a 
+                  href="https://www.smartraveller.gov.au"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Travel Safety Advice"
+                  className="w-7 h-7 border border-white/20 text-gray-300 hover:border-orange-400 hover:bg-orange-400 hover:text-white rounded transition-all duration-300 bg-transparent inline-flex items-center justify-center text-xs"
+                >
+                  <Shield className="w-3 h-3" />
+                </a>
+                <a 
+                  href="https://www.health.gov.au/health-topics/travel-health"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Travel Health Information"
+                  className="w-7 h-7 border border-white/20 text-gray-300 hover:border-red-400 hover:bg-red-400 hover:text-white rounded transition-all duration-300 bg-transparent inline-flex items-center justify-center text-xs"
+                >
+                  <Heart className="w-3 h-3" />
+                </a>
+                <a 
+                  href="https://www.dfat.gov.au/geo/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Embassy & Consulates"
+                  className="w-7 h-7 border border-white/20 text-gray-300 hover:border-purple-400 hover:bg-purple-400 hover:text-white rounded transition-all duration-300 bg-transparent inline-flex items-center justify-center text-xs"
+                >
+                  <MapIcon className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+
+            {/* Social Media Icons - Below travel resources */}
+            <div className="flex justify-start space-x-3 pt-3 mt-3 border-t border-gray-700">
+              <a 
+                href="https://www.facebook.com/travlintravel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-2 border-white/30 text-white hover:border-orange-400 hover:bg-orange-400 p-2.5 rounded-full transition-all duration-300 bg-transparent inline-flex items-center justify-center"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://www.instagram.com/travlintravel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-2 border-white/30 text-white hover:border-pink-400 hover:bg-pink-400 p-2.5 rounded-full transition-all duration-300 bg-transparent inline-flex items-center justify-center"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://www.youtube.com/@travlintravel/videos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-2 border-white/30 text-white hover:border-red-500 hover:bg-red-500 p-2.5 rounded-full transition-all duration-300 bg-transparent inline-flex items-center justify-center"
+              >
+                <Youtube className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+          
+          {/* TravLin Connect - Column 4 - Maximized Video Section */}
+          <div className="space-y-3 text-left w-full">
+            <h4 className="font-semibold mb-3">LET'S GO TRAVLIN</h4>
+            
+            <div className="space-y-3 w-full">
+              {/* Updated text */}
+              <p className="text-sm text-gray-300" style={{ lineHeight: '1.2' }}>
+                Ready to start planning your next adventure? Connect with Linda for personalised travel expertise and professional cruise planning.
+              </p>
+              
+              {/* TravLin YouTube Video with Custom Volume Control - Minimal Height */}
+              <div className="w-full rounded-lg overflow-hidden border border-blue-500 shadow-lg bg-black relative">
+                {/* Custom Volume Control Button */}
+                <button
+                  onClick={handleVolumeToggle}
+                  className="absolute top-3 right-3 z-10 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all duration-300 backdrop-blur-sm"
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                  }}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-4 h-4 text-white" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 text-white" />
+                  )}
+                </button>
+
+                <iframe
+                  ref={iframeRef}
+                  className="w-full h-auto"
+                  src="https://www.youtube.com/embed/gIkqN3mVNR8?controls=1&modestbranding=1&rel=0&showinfo=0&loop=1&playlist=gIkqN3mVNR8&enablejsapi=1"
+                  title="TravLin Travel Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ 
+                    aspectRatio: '16/9',
+                    minHeight: '180px',
+                    height: 'auto'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="border-t border-gray-700 mt-4 pt-3 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-6 mb-4 md:mb-0">
+            <p className="text-sm text-gray-400">
+              © 2025 TravLin Travel. All rights reserved.
+            </p>
+            <div className="text-xs text-gray-500">
+              Founded by Linda Forster • Powered by Passion
+            </div>
+          </div>
+          
+          <div className="flex space-x-6 text-sm">
+            <button 
+              className="text-gray-400 transition-colors duration-300 cursor-pointer hover:underline"
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#ED7D31'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#adb5bd'; }}
+              onClick={() => setShowTermsPrivacy(true)}
+            >
+              Terms & Privacy
+            </button>
+            <span className="text-gray-600">•</span>
+            <span className="text-xs text-gray-500">Effective 01 Jul 2025</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Terms & Privacy Modal */}
+      <TermsPrivacy 
+        isOpen={showTermsPrivacy} 
+        onClose={() => setShowTermsPrivacy(false)} 
+      />
+    </footer>
+  )
+}

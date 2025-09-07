@@ -1,0 +1,116 @@
+import React from 'react'
+import { Button } from './ui/button'
+import { LucideIcon } from 'lucide-react'
+
+interface TravLinButtonProps {
+  children: React.ReactNode
+  onClick?: () => void
+  variant?: 'blue' | 'orange' | 'yellow' | 'secondary' | 'white'
+  size?: 'sm' | 'md' | 'lg'
+  icon?: LucideIcon
+  className?: string
+  disabled?: boolean
+  style?: React.CSSProperties
+}
+
+export default function TravLinButton({ 
+  children, 
+  onClick, 
+  variant = 'blue', 
+  size = 'md', 
+  icon: Icon, 
+  className = '',
+  disabled = false,
+  style = {}
+}: TravLinButtonProps) {
+  
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'orange':
+        return {
+          backgroundColor: 'var(--brand-orange)',
+          color: 'var(--white)',
+          boxShadow: '0 6px 20px rgba(237, 125, 49, 0.25)',
+          hoverBg: 'var(--brand-orange-dark)',
+          hoverShadow: '0 8px 25px rgba(237, 125, 49, 0.35)'
+        }
+      case 'yellow':
+        return {
+          backgroundColor: 'var(--brand-yellow)',
+          color: 'var(--gray-800)',
+          boxShadow: '0 6px 20px rgba(255, 192, 0, 0.25)',
+          hoverBg: 'var(--brand-yellow-dark)',
+          hoverShadow: '0 8px 25px rgba(255, 192, 0, 0.35)'
+        }
+      case 'secondary':
+        return {
+          backgroundColor: 'transparent',
+          color: 'var(--brand-blue)',
+          boxShadow: '0 4px 15px rgba(0, 117, 204, 0.15)',
+          border: '2px solid var(--brand-blue)',
+          hoverBg: 'var(--brand-blue)',
+          hoverColor: 'var(--white)',
+          hoverShadow: '0 6px 20px rgba(0, 117, 204, 0.25)'
+        }
+      case 'white':
+        return {
+          backgroundColor: 'var(--white)',
+          color: 'var(--brand-blue)',
+          boxShadow: '0 4px 15px rgba(0, 117, 204, 0.15)',
+          border: '2px solid var(--brand-blue)',
+          hoverBg: 'var(--gray-50)',
+          hoverColor: 'var(--brand-blue)',
+          hoverShadow: '0 6px 20px rgba(0, 117, 204, 0.25)'
+        }
+      default: // blue
+        return {
+          backgroundColor: 'var(--brand-blue)',
+          color: 'var(--white)',
+          boxShadow: '0 6px 20px rgba(0, 117, 204, 0.25)',
+          hoverBg: 'var(--brand-blue-dark)',
+          hoverShadow: '0 8px 25px rgba(0, 117, 204, 0.35)'
+        }
+    }
+  }
+
+  const getSizeStyles = () => {
+    switch (size) {
+      case 'sm':
+        return 'py-2 px-4 text-sm'
+      case 'lg':
+        return 'py-5 px-10 text-lg'
+      default: // md
+        return 'py-4 px-8 text-base'
+    }
+  }
+
+  const styles = getVariantStyles()
+
+  return (
+    <Button
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center gap-2 font-semibold rounded-lg uppercase tracking-wide transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border-none ${getSizeStyles()} ${className}`}
+      style={{
+        backgroundColor: styles.backgroundColor,
+        color: styles.color,
+        boxShadow: styles.boxShadow,
+        border: styles.border || 'none',
+        ...style
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = styles.hoverBg;
+        if (styles.hoverColor) e.currentTarget.style.color = styles.hoverColor;
+        e.currentTarget.style.boxShadow = styles.hoverShadow;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = styles.backgroundColor;
+        e.currentTarget.style.color = styles.color;
+        e.currentTarget.style.boxShadow = styles.boxShadow;
+      }}
+    >
+      {Icon && <Icon className="w-5 h-5" />}
+      {children}
+    </Button>
+  )
+}
